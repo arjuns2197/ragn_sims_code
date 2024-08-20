@@ -1,7 +1,7 @@
 import sys
 sys.path.append("..")
 
-import yt
+
 import caesar
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,7 +10,7 @@ import pandas as pd
 
 
 
-df = pd.read_pickle("../ragn_simba_files/doug_data/doug_df.pkl")
+df = pd.read_pickle("../ragn_simba_files/data/df.pkl")
 
 masses = np.linspace(10,12,1000)
 F_rmanga = agn.get_Fagn_rmanga(masses)

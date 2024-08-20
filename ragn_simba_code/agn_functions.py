@@ -70,25 +70,6 @@ def get_agn_feedback(bhm_dot, fedd, log_bhm, log_mstar):
     return L_agn
 
 
-def get_agn_feedback_dummy(bhm_dot, fedd, log_bhm, log_mstar, p):
-    
-    if log_bhm > 8:
-        if 0 < fedd < 0.02:
-
-            if log_mstar > 9.5:
-                L_agn = (1e30)*(bhm_dot*6.3e25/4e17)**(p)
-                L_agn = np.log10(L_agn)
-            
-            else:
-                L_agn = 0
-        
-        else:
-            L_agn = 0
-    
-    else:
-        L_agn = 0
-        
-    return L_agn
 
 
 def get_total_radio(log_sfr, bhm_dot, fedd, log_bhm, log_mstar):
@@ -320,14 +301,8 @@ def load_simba_df():
     sigma = []
     ssfr = []
     stellar_mass = []
-    is_agn = []
-    ER = []
-    is_strong_agn = []
-    is_strong_agn_fedd = []
-    fedd_gt_m2 = []
-    gas_mass = []
-    gas_temp = []
-    cgm_temp = []
+
+
 
     for num in range(143,152):
         num = str(num)
@@ -349,18 +324,10 @@ def load_simba_df():
             log_sm = np.log10(sm)
             stellar_mass.append(log_sm)
 
-            gm = gal.masses['gas'].to_value(units = None, equivalence = None)
-            log_gm = np.log10(gm)
-            gas_mass.append(log_gm)
-
-            gas_temp.append(gal.temperatures['mass_weighted'].to_value(units = None, equivalence = None))
-            cgm_temp.append(gal.temperatures['mass_weighted_cgm'].to_value(units = None, equivalence = None))
-
             fedd_value = gal.bh_fedd.to_value(units = None, equivalence = None)
 
             L = get_total_radio(sfr1,gal.bhmdot,gal.bh_fedd,bhm1,log_sm)
             L_agn = get_agn_feedback(gal.bhmdot, gal.bh_fedd, bhm1,log_sm)
-            L_agn_dummy = get_agn_feedback_dummy(gal.bhmdot, gal.bh_fedd, bhm1,log_sm,p)
 
             Lradio.append(L)
             Lagn.append(L_agn)
@@ -377,44 +344,13 @@ def load_simba_df():
                 ssfr.append(np.log10(ssfr_value))
             
 
-            is_agn.append(check_is_agn(L_agn))
-            E_ratio = get_ER(bhm1,L_agn ,sigma_value,check_is_agn(L_agn))
-            ER.append(E_ratio)
-            is_strong_agn.append(check_is_sagn(L_agn, E_ratio))  
-            
-            if fedd_value > 1e-3:
-                if L_agn > 0:
-                    is_strong_agn_fedd.append(True)
-                
-                else:
-                    is_strong_agn_fedd.append(False)
-            
-            else:
-                is_strong_agn_fedd.append(False)
 
-
-            if fedd_value > 1e-2:
-                if L_agn > 0:
-                    fedd_gt_m2.append(True)
-                
-                else:
-                    fedd_gt_m2.append(False)
-            
-            else:
-                fedd_gt_m2.append(False)
-
-            fedd.append(fedd_value)        
 
 
     dict = {"sfr" : sfr, 'bhmdot' : bhm_dot, "bhm" : bhm, "fedd" : fedd, "Lr" : Lradio,
-    "sigma" : sigma, "sSFR" : ssfr, "mass" : stellar_mass,"gmass":gas_mass,
-    "is_agn" : is_agn, "ER" : ER, "is_strong_agn" : is_strong_agn, "is_strong_agn_fedd" : is_strong_agn_fedd,
-    "Lagn" : Lagn, "Lsfr" : Lsfr,
-    "gas_temp" : gas_temp, "cgm_temp" : cgm_temp,
-    "fedd_gt_m2" : fedd_gt_m2}
+    "sigma" : sigma, "sSFR" : ssfr, "mass" : stellar_mass,
+    "Lagn" : Lagn, "Lsfr" : Lsfr}
 
-    for key in dict:
-        print(key,len(dict[key]))
 
     df = pd.DataFrame(dict)
 
@@ -477,7 +413,7 @@ def load_doug_df():
 
             L = get_total_radio(sfr1,gal.bhmdot,gal.bh_fedd,bhm1,log_sm)
             L_agn = get_agn_feedback(gal.bhmdot, gal.bh_fedd, bhm1,log_sm)
-            L_agn_dummy = get_agn_feedback_dummy(gal.bhmdot, gal.bh_fedd, bhm1,log_sm,p)
+
 
             Lradio.append(L)
             Lagn.append(L_agn)
