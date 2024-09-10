@@ -53,11 +53,60 @@ def download_eagle_data():
     ER = get_ER(df['log_bh_mdot'], df['log_bh_mass'])
     df['ER'] = ER
 
-    df['is_strong_agn'] = np.where(df['ER'] > 0.001)[0]
-
     df = df.drop(["mass", "bh_mass", "sfr", "bh_mdot"],axis= 'columns')
 
     return df
+
+def download_eagleagn_data():
+
+  """
+  Returns -> A pandas dataframe containing properties of the galaxies in the EAGLE simulation with 
+  increased AGN feedback. 
+  The galaxy properties queried are:
+
+  -galaxy_id
+  -z
+  -stellar mass
+  -black hole mass
+  -black hole accretion rate
+  -star formation rate
+
+  Takes -> Nothing.
+  """
+
+  username = "qdk114"
+  password = "ry500uqu"
+
+  con = esql.connect(username, password= password)
+
+  query = "SELECT\
+          GalaxyID as galaxy_id,\
+          Redshift as z,\
+          MassType_Star as mass,\
+          BlackHoleMass as bh_mass,\
+          BlackHoleMassAccretionRate as bh_mdot,\
+          StarFormationRate as sfr\
+          FROM\
+          AGNdT9L0050N0752_SubHalo\
+          WHERE\
+          SnapNum IN (27,28)"
+  
+  data = esql.execute_query(con, query)
+
+  df = pd.DataFrame(data)
+
+  df['log_mass'] = np.log10(df['mass'])
+  df['log_bh_mass'] = np.log10(df['bh_mass'])
+  df['log_sfr'] = np.log10(df['sfr'])
+  df['log_ssfr'] = np.log10(df['sfr']/df['mass'])
+  df['log_bh_mdot'] = np.log10(df['bh_mdot'])
+
+  ER = get_ER(df['log_bh_mdot'], df['log_bh_mass'])
+  df['ER'] = ER
+
+  df = df.drop(["mass", "bh_mass", "sfr", "bh_mdot"],axis= 'columns')
+
+  return df
 
 
 def get_ER(log_mdot,log_bh_mass):
@@ -91,7 +140,7 @@ def bin_galaxies(property1,df): # Input exact column name as in Dataframe (str)
     nbins = [-np.inf,-11.5,-8]
 
   else:
-    nbins = [10,10.5,11.25,12] #[10,10.25,10.5,10.75,11,11.25,11.5,11.75,12]    
+    nbins = [10,10.25,10.5,10.75,11,11.25,11.5,11.75,12]    
 
   sorted_byprop1 = df.sort_values(by = [property1])
   binned_byprop1 = pd.cut(sorted_byprop1[property1], bins= nbins)

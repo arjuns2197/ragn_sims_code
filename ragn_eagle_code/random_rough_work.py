@@ -7,13 +7,13 @@ import eagleSqlTools as esql
 import pandas as pd
 import functions_eagle as funcs
 
-#data = funcs.download_eagle_data()
-#data.to_pickle("../ragn_eagle_files/df.pkl")
+data = funcs.download_eagleagn_data()
+data.to_pickle("../ragn_eagle_files/data_agn_variant/df.pkl")
 
-df = pd.read_pickle("../ragn_eagle_files/df.pkl")
+df = pd.read_pickle("../ragn_eagle_files/data_agn_variant/df.pkl")
 
-ER = funcs.get_ER(np.log10(df['bh_mdot']),df['log_bh_mass'])
-df['ER'] = ER
+
+ER = df['ER'] 
 
 print(ER.max())
 

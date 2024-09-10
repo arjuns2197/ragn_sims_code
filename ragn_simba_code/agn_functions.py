@@ -486,7 +486,7 @@ def bin_galaxies(property1,df): # Input exact column name as in Dataframe (str)
     nbins = [-np.inf,-11.5,-8]
 
   else:
-    nbins = [10,10.5,11.25,12] #[10,10.25,10.5,10.75,11,11.25,11.5,11.75,12]    
+    nbins = [10,10.25,10.5,10.75,11,11.25,11.5,11.75,12]    
 
   sorted_byprop1 = df.sort_values(by = [property1])
   binned_byprop1 = pd.cut(sorted_byprop1[property1], bins= nbins)
