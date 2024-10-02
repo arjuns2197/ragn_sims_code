@@ -57,6 +57,7 @@ def download_eagle_data():
 
     return df
 
+
 def download_eagleagn_data():
 
   """
@@ -118,7 +119,7 @@ def get_ER(log_mdot,log_bh_mass):
     Takes -> The logarithm of the black hole mass in Msun
     """
 
-    eta = 0.1
+    eta = 0.1*0.15
     c_sq = (3e8)**2 
     L_edd = 1.26e31*(10**log_bh_mass)
 

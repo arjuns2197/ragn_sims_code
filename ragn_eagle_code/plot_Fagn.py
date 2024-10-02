@@ -6,14 +6,12 @@ import numpy as np
 import functions_eagle as funcs
 import pandas as pd
 
+#df = funcs.download_eagle_data()
+#df.to_pickle("../ragn_eagle_files/data/df.pkl")
 
 df = pd.read_pickle("../ragn_eagle_files/data/df.pkl")
 
-ER = funcs.get_ER(np.log10(df['bh_mdot']),df['log_bh_mass'])
-
-
-df['ER'] = ER
-
+ER = df['ER']
 
 
 is_strong_ragn = []
@@ -125,14 +123,14 @@ plt.errorbar(mass_center, frac_sf, yerr = ebars_sf, c = 'b', capsize = 4)
 
 plt.plot(masses,10**F_rmanga, label = r'$F_{\rm AGN} ~\rm MaNGA$', linewidth = 4, c = 'k')
 plt.scatter(mass_center, frac, s = 500, c = 'tab:gray', label = 'Both Q and SFG')
-plt.xlabel(r"$\log\left(M_\star/ M_{\odot}\right)$", fontsize = 1.5*f)
-plt.ylabel(r"$F_{\rm AGN}$", fontsize = 1.5*f)
+plt.xlabel(r"$\log\left(M_\star/ M_{\odot}\right)$", fontsize = f)
+plt.ylabel(r"$F_{\rm AGN}$", fontsize = f)
 plt.xlim(9.8,12.1)
 plt.yscale('log')
 plt.minorticks_off()
 plt.legend(prop = {'size' : 20})
 plt.yticks([1e-4,1e-3,1e-2,1e-1])
-plt.tick_params(axis = 'x', labelsize = 1.5*f, length = 10, width = 3)
-plt.tick_params(axis = 'y', labelsize = 1.5*f, length = 10, width = 3)
+plt.tick_params(axis = 'x', labelsize = f, length = 10, width = 3)
+plt.tick_params(axis = 'y', labelsize = f, length = 10, width = 3)
 plt.tight_layout()
 plt.show()

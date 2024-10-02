@@ -42,7 +42,7 @@ for mass, group in grped_df_mass:
     center = (left + right)/2
     mass_center.append(center)
 
-    n_agn_all = group['is_strong_agn_fedd'].sum()
+    n_agn_all = group['is_strong_agn'].sum()
     size_all = len(group)
     f_all = n_agn_all/size_all
     size.append(size_all)
@@ -60,7 +60,7 @@ for mass, group in grped_df_mass:
 
             s_q = s_q + 1
 
-            if group['is_strong_agn_fedd'].iloc[i] == True:
+            if group['is_strong_agn'].iloc[i] == True:
                 n_agn_q = n_agn_q + 1
 
 
@@ -68,7 +68,7 @@ for mass, group in grped_df_mass:
 
             s_sf = s_sf + 1
 
-            if group['is_strong_agn_fedd'].iloc[i] == True:
+            if group['is_strong_agn'].iloc[i] == True:
                 n_agn_sf = n_agn_sf + 1
     
 

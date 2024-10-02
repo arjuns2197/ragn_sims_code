@@ -289,6 +289,45 @@ def get_Fagn_rmanga(log_M):
     return F
 
 
+def get_ker(log_bhm,bhmdot,mdotedd,eta):
+
+    if log_bhm > 7.5:
+
+        if bhmdot/mdotedd < 0.2:
+            c = 2.99792e8
+
+            vw = (500 + 500*(log_bhm - 6)/3)*1e3
+            vjet = (7000*np.log10(0.2*mdotedd/bhmdot))*1e3
+            v = vw + vjet
+
+            bhmdot = bhmdot*(1.989e30/3.156e+7)
+
+            k_lumi = 10*eta*c*v*bhmdot*1e7
+            L_edd = 1.26e38*(10**log_bhm)
+
+            ker = k_lumi/L_edd
+        
+        else:
+            c = 299792
+
+            vw = (500 + 500*(log_bhm - 6)/3)*1e3
+            vjet = 0
+            v = vw + vjet
+
+            bhmdot = bhmdot*(1.989e30/3.156e+7)
+            k_lumi = 10*eta*c*v*bhmdot*1e7
+            L_edd = 1.26e38*(10**log_bhm)
+
+            ker = k_lumi/L_edd
+        
+
+    
+    else:
+        ker = 0
+
+    return ker
+
+
 def load_simba_df():
 
     sfr = []
@@ -301,7 +340,9 @@ def load_simba_df():
     sigma = []
     ssfr = []
     stellar_mass = []
-
+    ker = []
+    mdot_edd = []
+    is_strong_agn = []
 
 
     for num in range(143,152):
@@ -315,7 +356,8 @@ def load_simba_df():
             sfr1 = np.log10(sfr1)
             sfr.append(sfr1)
 
-            bhm_dot.append(gal.bhmdot.to_value(units = None, equivalence = None))
+            bhmdot = gal.bhmdot.to_value(units = None, equivalence = None)
+            bhm_dot.append(bhmdot)
 
             bhm1 = gal.masses['bh'].to_value(units = None, equivalence = None)
             bhm1 = np.log10(bhm1)
@@ -325,6 +367,7 @@ def load_simba_df():
             stellar_mass.append(log_sm)
 
             fedd_value = gal.bh_fedd.to_value(units = None, equivalence = None)
+            fedd.append(fedd_value)
 
             L = get_total_radio(sfr1,gal.bhmdot,gal.bh_fedd,bhm1,log_sm)
             L_agn = get_agn_feedback(gal.bhmdot, gal.bh_fedd, bhm1,log_sm)
@@ -336,20 +379,34 @@ def load_simba_df():
             sigma_value = np.log10(sigma_value)
             sigma.append(sigma_value)
             ssfr_value = gal.sfr.to_value(units = None, equivalence = None)/gal.masses['stellar'].to_value(units = None, equivalence = None)
+            
+            if fedd_value != 0:
+                mdotedd = bhmdot/fedd_value
+            
+            else:
+                mdotedd = np.nan
+
+            mdot_edd.append(mdotedd)
 
             if ssfr_value == 0:
                 ssfr.append(-1*np.inf)
 
             else:
                 ssfr.append(np.log10(ssfr_value))
+
+            ker_value = get_ker(bhm1,bhmdot, mdotedd,0.1)
+            ker.append(ker_value)
+
+            if ker_value > 1e-3:
+                is_strong_agn.append(True)
             
-
-
+            else:
+                is_strong_agn.append(False)
 
 
     dict = {"sfr" : sfr, 'bhmdot' : bhm_dot, "bhm" : bhm, "fedd" : fedd, "Lr" : Lradio,
     "sigma" : sigma, "sSFR" : ssfr, "mass" : stellar_mass,
-    "Lagn" : Lagn, "Lsfr" : Lsfr}
+    "Lagn" : Lagn, "Lsfr" : Lsfr, "ker" : ker, "mdot_edd": mdot_edd, "is_strong_agn" : is_strong_agn}
 
 
     df = pd.DataFrame(dict)
