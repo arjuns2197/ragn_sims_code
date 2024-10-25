@@ -23,8 +23,7 @@ def get_radio_cavag(log_pcav):
 
 def get_rho_sf_thresh():
 
-  rho_sf_thresh = 0.13 # protons per cm^3
-  rho_sf_thresh = rho_sf_thresh* (1.67262e-27)*(5.02758e-37/(3.24078e-22)**3) # Msun/kpc^3
+  rho_sf_thresh = 3.213e6 # Msun/kpc^3 or 0.13 protons per cm^3
 
   return rho_sf_thresh
 
@@ -91,5 +90,6 @@ def get_ker(L_k, Ledd):
     ker = L_k/Ledd
 
   return ker
+
 
 

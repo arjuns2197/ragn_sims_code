@@ -8,14 +8,20 @@ import pandas as pd
 import h5py
 import os
 
-
 path = "../ragn_illustris100_files/df_99.pkl"
 df = pd.read_pickle(path)
 
 
 bhm = df['log_bhm']
-rho_gas = np.log10(df['rho_gas_bh'])
+epsilon = df['epsilon_k']
 
-plt.scatter(bhm, rho_gas)
+plt.scatter(bhm, epsilon)
 plt.show()
+
+
+
+
+    
+
+    
 
