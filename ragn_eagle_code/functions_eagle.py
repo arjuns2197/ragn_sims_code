@@ -59,10 +59,11 @@ def download_eagle_data():
 
 
 def download_eagleagn_data():
-
+  
+  #Not Using This
   """
   Returns -> A pandas dataframe containing properties of the galaxies in the EAGLE simulation with 
-  increased AGN feedback. 
+  the sub grid models that have increased AGN feedback. 
   The galaxy properties queried are:
 
   -galaxy_id
@@ -113,7 +114,7 @@ def download_eagleagn_data():
 def get_ER(log_mdot,log_bh_mass):
 
     """
-    Returns -> The Eddington ratio of a black hole (Mdot/Mdot_Edd), given its
+    Returns -> The Eddington ratio of a black hole (Ljet/L_Edd), given its
     mass and accretion rate
 
     Takes -> The logarithm of the black hole mass in Msun
@@ -148,18 +149,6 @@ def bin_galaxies(property1,df): # Input exact column name as in Dataframe (str)
   df[property1 + "_bin"] = binned_byprop1
 
   return df
-
-
-def get_Fagn_rmanga(log_M):
-    
-    a0 = -2.73
-    a1 = 2.40
-    a2 = -0.79
-    a3 = 0.09
-    
-    F = a3*(log_M -10.5)**3 + a2*(log_M - 10.5)**2 + a1*(log_M - 10.5) + a0
-    
-    return F
 
 
 
@@ -241,6 +230,7 @@ def get_Fagn_of_lcrit(df,lambda_crit):
 
     size = []
     frac = []
+    ebars = []
     mass_center = []
 
 
@@ -265,6 +255,7 @@ def get_Fagn_of_lcrit(df,lambda_crit):
         f_all = n_agn_all/size_all
         size.append(size_all)
         frac.append(f_all)
+        ebars.append(2*np.sqrt(n_agn_all/(size_all)**2))
 
         s_q = 0
         n_agn_q = 0
@@ -302,6 +293,9 @@ def get_Fagn_of_lcrit(df,lambda_crit):
         ebars_sf.append(2*np.sqrt(n_agn_sf/(s_sf)**2))
         
     mass_center = np.array(mass_center)
+    frac = np.array(frac)
+    ebars = np.array(ebars)
+
     size_q = np.array(size_q)
     frac_q = np.array(frac_q)
     ebars_q = np.array(ebars_q)
@@ -310,4 +304,4 @@ def get_Fagn_of_lcrit(df,lambda_crit):
     frac_sf = np.array(frac_sf)
     ebars_sf = np.array(ebars_sf)
 
-    return [mass_center,frac,frac_q,ebars_q,frac_sf,ebars_sf]
+    return [mass_center,frac,ebars,frac_q,ebars_q,frac_sf,ebars_sf]
