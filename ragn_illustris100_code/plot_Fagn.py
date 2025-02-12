@@ -1,114 +1,120 @@
 import sys
 sys.path.append("..")
 
-
-import caesar
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import numpy as np
-import functions_illustris as f
+import functions_illustris as funcs
 import pandas as pd
-
+import matplotlib.pylab as pl
+import matplotlib.gridspec as gridspec
+f = 30
 
 
 df = pd.read_pickle("../ragn_illustris100_files/df_99.pkl")
 
-masses = np.linspace(10,12,1000)
-F_rmanga = f.get_Fagn_rmanga(masses)
-f_size = 30
+inds_high_mass = np.where((df['log_mass'] >= 10) & (df['log_mass'] <= 12))[0]
+df = df.iloc[inds_high_mass].reset_index(drop=True)
+
+[mass_center,frac_2,ebars_low_2,ebars_high_2,frac_q_2,ebars_q_low_2,ebars_q_high_2,frac_sf_2,ebars_sf_low_2,ebars_sf_high_2] = funcs.get_Fagn_of_lcrit(df,1e-2)
+[mass_center,frac_3,ebars_low_3,ebars_high_3,frac_q_3,ebars_q_low_3,ebars_q_high_3,frac_sf_3,ebars_sf_low_3,ebars_sf_high_3] = funcs.get_Fagn_of_lcrit(df,1e-3)
+[mass_center,frac_4,ebars_low_4,ebars_high_4,frac_q_4,ebars_q_low_4,ebars_q_high_4,frac_sf_4,ebars_sf_low_4,ebars_sf_high_4] = funcs.get_Fagn_of_lcrit(df,1e-4)
 
 
-df_mass_bins = f.bin_galaxies("log_mass", df)
-grped_df_mass = df_mass_bins.groupby('log_mass_bin')
+fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(10, 8))
+plt.suptitle("Comparison with TNG100", fontsize=f)
+
+# First subplot (axs[0, 0])
+
+axs[0, 0].plot(mass_center[frac_2 > 1e-7], frac_2[frac_2 > 1e-7], linewidth = 4, linestyle = '--',c='tab:gray', label='TNG100 Star-forming and Quiescent', alpha = 0.75)
+#axs[0, 0].errorbar(mass_center[frac_3 > 1e-7], frac_3[frac_3 > 1e-7], yerr=ebars_3[frac_3 > 1e-7], c='tab:gray', capsize=15, capthick=1)
+axs[0, 0].scatter(mass_center, frac_q_2, c='tab:red', s=200, alpha=0.5)
+axs[0, 0].plot(mass_center[frac_q_2 > 1e-7], frac_q_2[frac_q_2 > 1e-7], linewidth=1.5, c='tab:red', label= "TNG100 Quiescent")
+axs[0, 0].errorbar(mass_center[frac_q_2 > 1e-7], frac_q_2[frac_q_2 > 1e-7], yerr=[ebars_q_low_2[frac_q_2 > 1e-7], ebars_q_high_2[frac_q_2 > 1e-7]], c='tab:red', capsize=9, capthick=1)
+axs[0, 0].scatter(mass_center, frac_sf_2, c='royalblue', s=200, alpha=0.5)
+axs[0, 0].plot(mass_center[frac_sf_2 > 1e-7], frac_sf_2[frac_sf_2 > 1e-7], linewidth=1.5, c='royalblue', label="TNG100 Star-forming")
+axs[0, 0].errorbar(mass_center[frac_sf_2 > 1e-7], frac_sf_2[frac_sf_2 > 1e-7], yerr=[ebars_sf_low_2[frac_sf_2 > 1e-7], ebars_sf_high_2[frac_sf_2 > 1e-7]] , c='royalblue', capsize=9, capthick=1)
+axs[0, 0].set_xlabel(r"$\log_{10}\left(M_\star/ M_{\odot}\right)$", fontsize= f)
+axs[0, 0].set_ylabel(r"$\log_{10}F_{\rm AGN}$", fontsize=f)
+axs[0, 0].set_xlim(9.8, 12.2)
+axs[0, 0].set_xticks([10, 10.5, 11, 11.5, 12])
+axs[0, 0].set_yscale('log')
+axs[0, 0].minorticks_off()
+axs[0, 0].set_ylim(3e-6, 30)
+axs[0, 0].set_yticks([1e-5, 1e-4, 1e-3, 1e-2, 1e-1,1])
+axs[0, 0].set_yticklabels([-5 ,-4, -3, -2, -1, 0])
+axs[0, 0].tick_params(axis='x', labelsize= 0.75*f, length=10, width=3)
+axs[0, 0].tick_params(axis='y', labelsize= 0.75*f, length=10, width=3)
+axs[0,0].annotate(r"$ \log_{10}\left(\lambda_c \right) = -2$", (10,3),fontsize = f)
+
+plt.sca(axs[0, 0])
+funcs.plot_manga_constraint()
 
 
-size = []
-frac = []
-mass_center = []
+# Second subplot (axs[0, 1])
 
+axs[0, 1].minorticks_off()
+axs[0, 1].set_xticks([])
+axs[0, 1].set_yticks([])
+handles, labels = axs[0, 0].get_legend_handles_labels()
+axs[0, 1].legend(handles, labels, loc='center', fontsize = 0.75*f, frameon = False)
+axs[0,1].spines['top'].set_visible(False)
+axs[0,1].spines['right'].set_visible(False)
 
-frac_q = []
-frac_sf = []
-ebars_q = []
-ebars_sf = []
-size_q = []
-size_sf = []
+# Third subplot (axs[1, 0])
 
-for mass, group in grped_df_mass:
+axs[1, 0].plot(mass_center[frac_3 > 1e-7], frac_3[frac_3 > 1e-7], linewidth = 4, linestyle = '--',c='tab:gray', label='TNG100 Star-forming and Quiescent', alpha = 0.75)
+#axs[1, 0].errorbar(mass_center[frac_4 > 1e-7], frac_4[frac_4 > 1e-7], yerr=ebars_4[frac_4 > 1e-7], c='tab:gray', capsize=15, capthick=1)
+axs[1, 0].scatter(mass_center, frac_q_3, c='tab:red', s=200, alpha=0.5)
+axs[1, 0].plot(mass_center[frac_q_3 > 1e-7], frac_q_3[frac_q_3 > 1e-7], linewidth=1.5, c='tab:red')
+axs[1, 0].errorbar(mass_center[frac_q_3 > 1e-7], frac_q_3[frac_q_3 > 1e-7], yerr=[ebars_q_low_3[frac_q_3 > 1e-7], ebars_q_high_3[frac_q_3 > 1e-7]], c='tab:red', capsize=9, capthick=1)
+axs[1, 0].scatter(mass_center, frac_sf_3, c='royalblue', s=200, alpha=0.5)
+axs[1, 0].plot(mass_center[frac_sf_3 > 1e-7], frac_sf_3[frac_sf_3 > 1e-7], linewidth=1.5, c='royalblue')
+axs[1, 0].errorbar(mass_center[frac_sf_3 > 1e-7], frac_sf_3[frac_sf_3 > 1e-7], yerr=[ebars_sf_low_3[frac_sf_3 > 1e-7], ebars_sf_high_3[frac_sf_3 > 1e-7]], c='royalblue', capsize=9, capthick=1)
+axs[1, 0].set_xlabel(r"$\log_{10}\left(M_\star/ M_{\odot}\right)$", fontsize=f)
+axs[1, 0].set_ylabel(r"$\log_{10}F_{\rm AGN}$", fontsize=f)
+axs[1, 0].set_xlim(9.8, 12.2)
+axs[1, 0].set_xticks([10, 10.5, 11, 11.5, 12])
+axs[1, 0].set_yscale('log')
+axs[1, 0].minorticks_off()
+axs[1, 0].set_ylim(3e-6, 30)
+axs[1, 0].set_yticks([1e-5, 1e-4, 1e-3, 1e-2, 1e-1,1])
+axs[1, 0].set_yticklabels([-5, -4, -3, -2, -1,0])
+axs[1, 0].tick_params(axis='x', labelsize= 0.75*f, length=10, width=3)
+axs[1, 0].tick_params(axis='y', labelsize= 0.75*f, length=10, width=3)
+axs[1,0].annotate(r"$ \log_{10}\left(\lambda_c \right) = -3$", (10,3),fontsize = f)
 
-    string = str(mass)
-    split = string.split(',')
-    left = float(split[0][1:])
-    right = float(split[1][:-1])
-    center = (left + right)/2
-    mass_center.append(center)
+plt.sca(axs[1, 0])
+funcs.plot_manga_constraint()
 
-    n_agn_all = group['is_strong_agn_minus4'].sum()
-    size_all = len(group)
-    f_all = n_agn_all/size_all
-    size.append(size_all)
-    frac.append(f_all)
+# Fourth subplot (axs[1, 1])
 
-    s_q = 0
-    n_agn_q = 0
+axs[1, 1].plot(mass_center[frac_4 > 1e-7], frac_4[frac_4 > 1e-7], linewidth = 4, linestyle = '--',c='tab:gray', label='TNG100 Star-forming and Quiescent', alpha = 0.75)
+#axs[1, 1].errorbar(mass_center[frac_5 > 1e-7], frac_5[frac_5 > 1e-7], yerr=ebars_5[frac_5 > 1e-7], c='tab:gray', capsize=15, capthick=1)
+axs[1, 1].scatter(mass_center, frac_q_4, c='tab:red', s=200, alpha=0.5)
+axs[1, 1].plot(mass_center[frac_q_4 > 1e-7], frac_q_4[frac_q_4 > 1e-7], linewidth=1.5, c='tab:red')
+axs[1, 1].errorbar(mass_center[frac_q_4 > 1e-7], frac_q_4[frac_q_4 > 1e-7], yerr=[ebars_q_low_4[frac_q_4 > 1e-7], ebars_q_high_4[frac_q_4 > 1e-7]], c='tab:red', capsize=9, capthick=1)
+axs[1, 1].scatter(mass_center, frac_sf_4, c='royalblue', s=200, alpha=0.5)
+axs[1, 1].plot(mass_center[frac_sf_4 > 1e-7], frac_sf_4[frac_sf_4 > 1e-7], linewidth=1.5, c='royalblue')
+axs[1, 1].errorbar(mass_center[frac_sf_4 > 1e-7], frac_sf_4[frac_sf_4 > 1e-7], yerr=[ebars_sf_low_4[frac_sf_4 > 1e-7], ebars_sf_high_4[frac_sf_4 > 1e-7]], c='royalblue', capsize=9, capthick=1)
+axs[1, 1].set_xlabel(r"$\log_{10}\left(M_\star/ M_{\odot}\right)$", fontsize=f)
+axs[1, 1].set_ylabel(r"$\log_{10}F_{\rm AGN}$", fontsize=f)
+axs[1, 1].set_xlim(9.8, 12.2)
+axs[1, 1].set_xticks([10, 10.5, 11, 11.5, 12])
+axs[1, 1].set_yscale('log')
+axs[1, 1].minorticks_off()
+axs[1, 1].set_ylim(3e-6, 30)
+axs[1, 1].set_yticks([1e-5, 1e-4, 1e-3, 1e-2, 1e-1,1])
+axs[1, 1].set_yticklabels([-5, -4, -3, -2, -1,0])
+axs[1, 1].yaxis.set_label_position("right")
+axs[1, 1].yaxis.tick_right()
+axs[1, 1].tick_params(axis='x', labelsize= 0.75*f, length=10, width=3)
+axs[1, 1].tick_params(axis='y', labelsize= 0.75*f, length=10, width=3)
+axs[1,1].annotate(r"$ \log_{10}\left(\lambda_c \right) = -4$", (10,3),fontsize = f)
 
-    s_sf = 0
-    n_agn_sf = 0
+plt.sca(axs[1, 1])
+funcs.plot_manga_constraint()
 
-    for i in range(len(group)):
-        
-        if group['log_ssfr'].iloc[i] < -11.5:
-
-            s_q = s_q + 1
-
-            if group['is_strong_agn_minus4'].iloc[i] == True:
-                n_agn_q = n_agn_q + 1
-
-
-        if group['log_ssfr'].iloc[i] > -11.5:
-
-            s_sf = s_sf + 1
-
-            if group['is_strong_agn_minus4'].iloc[i] == True:
-                n_agn_sf = n_agn_sf + 1
-    
-
-    print(mass_center)
-
-    size_q.append(s_q)
-    frac_q.append(n_agn_q/s_q)
-    ebars_q.append(2*np.sqrt(n_agn_q/(s_q)**2))
-
-
-    size_sf.append(s_sf)
-    frac_sf.append(n_agn_sf/s_sf)
-    ebars_sf.append(2*np.sqrt(n_agn_sf/(s_sf)**2))
-    
-
-plt.title("Comparision with TNG100 Simulation", fontsize = f_size)
-plt.scatter(mass_center, frac_q, c = 'r', s = 175)
-plt.plot(mass_center, frac_q, linewidth = 1.5, c = 'r',label = r"$Q~:~ \log\left(sSFR/ yr^{-1}\right) < -11.5$")
-plt.errorbar(mass_center, frac_q, yerr = ebars_q, c = 'r', capsize = 4)
-
-plt.scatter(mass_center, frac_sf, c = 'b', s = 175)
-plt.plot(mass_center, frac_sf, linewidth = 1.5, c = 'b',label = r"$SFG~:~ (\log\left(sSFR/ yr^{-1}\right) > -11.5)$")
-plt.errorbar(mass_center, frac_sf, yerr = ebars_sf, c = 'b', capsize = 4)
-
-# for n in range(len(size_q)):
-#     plt.annotate(str(size_q[n]), (mass_center[n] + 0.0000008,frac_q[n]+0.0000008))
-#     plt.annotate(str(size_sf[n]), (mass_center[n] + 0.0000008,frac_sf[n]+0.0000008))
-#     plt.annotate(str(size[n]), (mass_center[n] + 0.0000008,frac[n]+0.0000008))
-
-
-plt.plot(masses,10**F_rmanga, label = r'$F_{\rm AGN} ~\rm MaNGA$', linewidth = 4, c = 'k')
-plt.scatter(mass_center, frac, s = 500, c = 'tab:gray', label = 'Both Q and SFG')
-plt.xlabel(r"$\log\left(M_\star/ M_{\odot}\right)$", fontsize = f_size)
-plt.ylabel(r"$F_{\rm AGN}$", fontsize = f_size)
-plt.xlim(9.8,12.1)
-plt.yscale('log')
-plt.minorticks_off()
-plt.legend(prop = {'size' : 20})
-plt.yticks([1e-4,1e-3,1e-2,1e-1])
-plt.tick_params(axis = 'x', labelsize = f_size, length = 10, width = 3)
-plt.tick_params(axis = 'y', labelsize = f_size, length = 10, width = 3)
-plt.tight_layout()
+# Adjust layout and add legend
+fig.subplots_adjust(wspace=0, hspace=0)
 plt.show()
