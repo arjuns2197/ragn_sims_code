@@ -66,20 +66,20 @@ def bin_galaxies(property1,df): # Input exact column name as in Dataframe (str)
   return df
 
 
-def get_epsilon_k(rho):
+def get_epsilon_k(rho, fth = 0.005, epsilonk_max = 0.2):
 
   rho_sf_thresh =  get_rho_sf_thresh() # Msun/kpc^3
 
-  epsilon = min(rho/(0.05*rho_sf_thresh), 0.2)
+  epsilon = min(rho/(fth*rho_sf_thresh), epsilonk_max)
 
   return epsilon
 
 
-def get_edot_k(mdot_bh_si, rho):
+def get_edot_k(mdot_bh_si, rho, fth = 0.005, epsilonk_max = 0.2):
 
   c = 2.998e8
 
-  epsilon = get_epsilon_k(rho)
+  epsilon = get_epsilon_k(rho, fth, epsilonk_max)
   edot = (epsilon*mdot_bh_si*c**2)*1e7  # erg/s
   
 
@@ -398,10 +398,10 @@ def get_eddscaled_mdot(log_bhm, log_bhmdot):
   return edd_scaled_mdot
 
 
-def chi_of_mbh(log_bhm, chi_0, beta):
+def chi_of_mbh(log_bhm, chi_0, beta, log_bhm0, max_M):
 
-  term1 = chi_0*(10**log_bhm/10**8)**beta
-  term2 = 0.1
+  term1 = chi_0*(10**log_bhm/10**log_bhm0)**beta
+  term2 = max_M
 
   chi = np.minimum(term1, term2)
 
