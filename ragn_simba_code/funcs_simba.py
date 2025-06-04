@@ -12,7 +12,7 @@ from sklearn.metrics import root_mean_squared_error
 from scipy.optimize import minimize
 from scipy.special import betainc
 from scipy.stats import binom
-
+from scipy.optimize import curve_fit
 log_lambda_max = 1
 p = (17/12) + 2 ## Dummy Lagn model ; Lagn = (M_dot_bhm)^ps
 
@@ -443,6 +443,27 @@ def bin_galaxies(property1,df): # Input exact column name as in Dataframe (str)
   return df
 
 
+def bin_galaxies_4mbins(property1,df): # Input exact column name as in Dataframe (str)
+ 
+  '''Returns list of arrrays containing data-AGN-fraction as a function of required property, 
+  values of galaxy the property, model-AGN-fraction as a function of required property
+  and the errorbars on the model.
+
+  Inputs column name of property, manga dataframe, model dataframe,'''
+
+  if property1 == 'sSFR':
+    nbins = [-np.inf,-11.5,-8]
+
+  else:
+    nbins = [10.4,10.8,11.2,11.6,12]    
+
+  sorted_byprop1 = df.sort_values(by = [property1])
+  binned_byprop1 = pd.cut(sorted_byprop1[property1], bins= nbins)
+  df[property1 + "_bin"] = binned_byprop1
+
+  return df
+
+
 def schechter_prop(lamda, prop, alpha_0, beta, lambda_star, property_string):
 
   """This function is used while integrating the
@@ -538,7 +559,6 @@ def get_Fagn_of_lcrit(df,lambda_crit):
         if df['ker'][i] > lambda_crit:
 
             is_strong_ragn.append(True)
-            
 
         else:
             is_strong_ragn.append(False)
@@ -546,7 +566,7 @@ def get_Fagn_of_lcrit(df,lambda_crit):
 
     df['is_strong_ragn'] = is_strong_ragn
 
-    df_mass_bins = bin_galaxies("mass", df)
+    df_mass_bins = bin_galaxies_4mbins("mass", df)
     grped_df_mass = df_mass_bins.groupby('mass_bin')
 
     size = []
@@ -683,7 +703,89 @@ def plot_manga_constraint():
     log_Fs = np.percentile(log_Fs_all, 50, axis = 0)
 
 
-    plt.plot(log_Ms, 10**log_Fs, label = 'MaNGA Star-forming and Quiescent', linewidth = 2.5, c = 'k')
+    plt.plot(log_Ms, 10**log_Fs, label = 'MaNGA All', linewidth = 7.5, c = 'k')
     plt.fill_between(log_Ms, 10**log_Fs_ll, 10**log_Fs_ul, color = 'tab:gray', alpha = 0.5)
+
+
+def get_rms_fagn(frac_manga, frac):
+
+  frac = frac + 1e-8
+  frac = np.log10(frac)
+
+  rms = root_mean_squared_error(frac_manga, frac)
+
+  return rms
+
+
+def get_dev_slope(masses,frac_manga, frac):
+
+  def line(x,m,c):
+
+    y = m*x + c
+
+    return y
+
+  frac = frac + 1e-6
+  frac = np.log10(frac)
+
+  parms_pred, cov = curve_fit(line, masses, frac)
+  parms_manga, cov = curve_fit(line, masses, frac_manga)
+
+  dev = np.abs(parms_manga[0] - parms_pred[0])
+  print(parms_manga[0])
+  print(parms_pred[0])
+
+  return dev
+
+def get_rms_sfq(frac_q, frac_sf):
+
+  frac_q = frac_q + 1e-6
+  frac_q = np.log10(frac_q)
+  frac_sf = frac_sf + 1e-6
+  frac_sf = np.log10(frac_sf)
+
+  rms = root_mean_squared_error(frac_q, frac_sf)
+
+  return rms
+
+
+def plot_Fagn_mbins_constraint():
+    f = 30
+    Ms = np.array([10.2, 10.6, 11, 11.4, 11.8])
+    log_Fracs_q = np.array([-1.66, -1.17, -0.84])
+    log_Fracs_sf = np.array([-1.62, -1.58, -1.10, -0.65])
+    log_ebars_q = np.array([[0.1, 0.05, 0.05], 
+                            [0.09, 0.05, 0.05]])
+    log_ebars_sf = np.array([[0.4, 0.22, 0.13, 0.22], 
+                             [0.37, 0.19, 0.12, 0.17]])
+    
+    log_Fagn_uls = np.array([-0.78, -1.88, -0.30])
+
+    # Define colors using hex codes
+    red_hex = '#d62728'
+    blue_hex = '#1f77b4'
+
+    # Convert to linear
+    Fracs_q = 10**log_Fracs_q
+    Fracs_sf = 10**log_Fracs_sf
+
+    # Compute asymmetric errors in linear space
+    q_err_low = Fracs_q - 10**(log_Fracs_q - log_ebars_q[0])
+    q_err_high = 10**(log_Fracs_q + log_ebars_q[1]) - Fracs_q
+    sf_err_low = Fracs_sf - 10**(log_Fracs_sf - log_ebars_sf[0])
+    sf_err_high = 10**(log_Fracs_sf + log_ebars_sf[1]) - Fracs_sf
+
+    # Fill between for SF and Q — central line removed
+    plt.fill_between(Ms[2:], Fracs_q - q_err_low, Fracs_q + q_err_high,
+                     color=red_hex, alpha=0.5, label='Observed Quiescent')
+    plt.fill_between(Ms[1:], Fracs_sf - sf_err_low, Fracs_sf + sf_err_high,
+                     color=blue_hex, alpha=0.5, label='Observed Star-Forming')
+
+
+    # Example: single upper limit arrow (Q2 bin)
+    plt.hlines(10**log_Fagn_uls[1], Ms[1] - 0.05, Ms[1] + 0.05, colors=red_hex, linewidth=1, alpha=0.5)
+    plt.annotate('', xy=(Ms[1], 10**(log_Fagn_uls[1] - 0.3)), xytext=(Ms[1], 10**log_Fagn_uls[1]),
+                arrowprops=dict(arrowstyle='-|>', color=red_hex, linewidth=1, alpha=0.5))
+
 
 

@@ -11,7 +11,7 @@ import matplotlib.gridspec as gridspec
 f = 30
 
 
-df = pd.read_pickle("../ragn_illustris100_files/df_99.pkl")
+df = pd.read_pickle("../ragn_illustris100_files/df.pkl")
 
 inds_high_mass = np.where((df['log_mass'] >= 10) & (df['log_mass'] <= 12))[0]
 df = df.iloc[inds_high_mass].reset_index(drop=True)
@@ -45,7 +45,7 @@ axs[0, 0].set_yticks([1e-5, 1e-4, 1e-3, 1e-2, 1e-1,1])
 axs[0, 0].set_yticklabels([-5 ,-4, -3, -2, -1, 0])
 axs[0, 0].tick_params(axis='x', labelsize= 0.75*f, length=10, width=3)
 axs[0, 0].tick_params(axis='y', labelsize= 0.75*f, length=10, width=3)
-axs[0,0].annotate(r"$ \log_{10}\left(\lambda_c \right) = -2$", (10,3),fontsize = f)
+axs[0,0].annotate(r"$\Delta \log_{10}\left(\lambda_c \right) = 1$", (10,3),fontsize = f)
 
 plt.sca(axs[0, 0])
 funcs.plot_manga_constraint()
@@ -82,7 +82,7 @@ axs[1, 0].set_yticks([1e-5, 1e-4, 1e-3, 1e-2, 1e-1,1])
 axs[1, 0].set_yticklabels([-5, -4, -3, -2, -1,0])
 axs[1, 0].tick_params(axis='x', labelsize= 0.75*f, length=10, width=3)
 axs[1, 0].tick_params(axis='y', labelsize= 0.75*f, length=10, width=3)
-axs[1,0].annotate(r"$ \log_{10}\left(\lambda_c \right) = -3$", (10,3),fontsize = f)
+axs[1,0].annotate(r"$\Delta \log_{10}\left(\lambda_c \right) = 0$", (10,3),fontsize = f)
 
 plt.sca(axs[1, 0])
 funcs.plot_manga_constraint()
@@ -110,7 +110,7 @@ axs[1, 1].yaxis.set_label_position("right")
 axs[1, 1].yaxis.tick_right()
 axs[1, 1].tick_params(axis='x', labelsize= 0.75*f, length=10, width=3)
 axs[1, 1].tick_params(axis='y', labelsize= 0.75*f, length=10, width=3)
-axs[1,1].annotate(r"$ \log_{10}\left(\lambda_c \right) = -4$", (10,3),fontsize = f)
+axs[1,1].annotate(r"$\Delta \log_{10}\left(\lambda_c \right) = -1$", (10,3),fontsize = f)
 
 plt.sca(axs[1, 1])
 funcs.plot_manga_constraint()

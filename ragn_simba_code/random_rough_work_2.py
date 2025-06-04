@@ -18,116 +18,46 @@ from scipy.optimize import curve_fit
 from scipy.special import betaincinv
 from scipy.stats import binom
 
-a3 = 0.09
-a2 = -0.81
-a1 = 2.43
-a0 = -2.75
+f = 30
+
 
 df = pd.read_pickle("../ragn_simba_files/data/df.pkl")
-f = 30
 
 inds_high_mass = np.where((df['mass'] >= 10) & (df['mass'] <= 12))[0]
 df = df.iloc[inds_high_mass].reset_index(drop=True)
 
-def lamc_score_slopes(theta):
-
-    log_lam_c = theta[0]
-    lam_c = 10**log_lam_c
-
-    fagn_pred = funcs.get_Fagn_of_lcrit(df,lam_c)
-    log_masses = fagn_pred[0]
-    log_fracs = np.log10(fagn_pred[1])
-
-    log_fracs_manga = funcs.Fagn_manga(log_masses, a3, a2, a1, a0)
-
-    def line_eq(x,m,c):
-
-        y = m*x + c
-
-        return y
-    
-    inds_low_fracs = np.where(log_fracs < -4)
-
-    log_fracs = np.delete(log_fracs, inds_low_fracs)
-    log_fracs_manga = np.delete(log_fracs_manga, inds_low_fracs)
-    log_masses = np.delete(log_masses, inds_low_fracs)
-
-    if len(log_fracs) >= 4:
-        popt_manga, pcov = curve_fit(line_eq, log_masses, log_fracs_manga)
-        popt_simu, pcov = curve_fit(line_eq, log_masses, log_fracs)
-
-        slope_manga = [popt_manga[0]]
-        slope_simu = [popt_simu[0]]
-
-        print(slope_manga)
-        print(slope_simu)
-
-        mse = root_mean_squared_error(slope_manga, slope_simu)
-
-        return mse
-
-    else:
-        return np.inf
-
-
-def lamc_score_sf_q(theta):
-
-    log_lam_c = theta[0]
-    lam_c = 10**log_lam_c
-
-    [mass_center,frac,ebars_low,ebars_high,frac_q,ebars_q_low,ebars_q_high,frac_sf,ebars_sf_low,ebars_sf_high] = funcs.get_Fagn_of_lcrit(df,lam_c)
-
-    frac_q = frac_q + 1e-8
-    frac_q = np.log10(frac_q)
-
-    frac_sf = frac_sf + 1e-8
-    frac_sf = np.log10(frac_sf)
-
-
-    rmse_sf_q = root_mean_squared_error(frac_q,frac_sf)
-
-    return rmse_sf_q
-
-
-def lamc_score_offsets(theta):
-
-    log_lam_c = theta[0]
-    lam_c = 10**log_lam_c
-
-    [mass_center,frac,ebars_low,ebars_high,frac_q,ebars_q_low,ebars_q_high,frac_sf,ebars_sf_low,ebars_sf_high] = funcs.get_Fagn_of_lcrit(df,lam_c)
-
-    frac = frac + 1e-8
-    frac = np.log10(frac)
-
-    frac_manga = funcs.Fagn_manga(mass_center,a3, a2, a1, a0)
-
-    chisq_offsets = root_mean_squared_error(frac,frac_manga)
-
-    return chisq_offsets
+[mass_center,frac_2,ebars_low_2,ebars_high_2,frac_q_2,ebars_q_low_2,ebars_q_high_2,frac_sf_2,ebars_sf_low_2,ebars_sf_high_2] = funcs.get_Fagn_of_lcrit(df,1e-3)
 
 
 
+# Quiescent
+plt.scatter(mass_center, frac_q_2, c='tab:red', s=200, alpha=0.5)
+plt.plot(mass_center[frac_q_2 > 1e-7], frac_q_2[frac_q_2 > 1e-7], linewidth=1.5, c='tab:red', label="SIMBA Quiescent")
+plt.errorbar(mass_center[frac_q_2 > 1e-7], frac_q_2[frac_q_2 > 1e-7],
+             yerr=[ebars_q_low_2[frac_q_2 > 1e-7], ebars_q_high_2[frac_q_2 > 1e-7]],
+             c='tab:red', capsize=9, capthick=1)
+
+# Star-forming
+plt.scatter(mass_center, frac_sf_2, c='royalblue', s=200, alpha=0.5)
+plt.plot(mass_center[frac_sf_2 > 1e-7], frac_sf_2[frac_sf_2 > 1e-7], linewidth=1.5, c='royalblue', label="SIMBA Star-forming")
+plt.errorbar(mass_center[frac_sf_2 > 1e-7], frac_sf_2[frac_sf_2 > 1e-7],
+             yerr=[ebars_sf_low_2[frac_sf_2 > 1e-7], ebars_sf_high_2[frac_sf_2 > 1e-7]],
+             c='royalblue', capsize=9, capthick=1)
+
+plt.xlabel(r"$\log_{10}\left(M_\star/ M_{\odot}\right)$", fontsize=f)
+plt.ylabel(r"$\log_{10}F_{\rm AGN}$", fontsize=f)
+plt.xlim(10.4, 12.2)
+plt.xticks([10.6, 11, 11.4, 12])
+plt.yscale('log')
+plt.minorticks_off()
+plt.ylim(3e-6, 30)
+plt.yticks([1e-4, 1e-3, 1e-2, 1e-1, 1], labels=[-4, -3, -2, -1, 0])
+plt.tick_params(axis='x', labelsize=0.75 * f, length=10, width=3)
+plt.tick_params(axis='y', labelsize=0.75 * f, length=10, width=3)
+
+# Call function to plot overlay
+funcs.plot_Fagn_mbins_constraint()
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+plt.legend()
+plt.show()
