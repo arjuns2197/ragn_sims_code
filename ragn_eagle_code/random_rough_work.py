@@ -123,3 +123,15 @@ def get_Nagn_of_lcrit(df,lambda_crit):
 """
 
 
+# Log F_AGN values (from board)
+log_Fracs_q = np.array([-0.78, -1.88, -1.66, -1.17, -0.84])
+log_Fracs_sf = np.array([-0.3, -1.62, -1.58, -1.10, -0.65])
+
+# Errors only for last 3 Q bins and last 4 SF bins
+log_ebars_q = np.array([[0.10, 0.05, 0.05],    # lower
+                        [0.09, 0.05, 0.05]])   # upper
+log_ebars_sf = np.array([[0.4, 0.22, 0.13, 0.22],
+                            [0.37, 0.19, 0.12, 0.17]])
+
+
+

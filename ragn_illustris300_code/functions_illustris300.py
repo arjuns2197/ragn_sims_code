@@ -70,6 +70,27 @@ def bin_galaxies(property1,df): # Input exact column name as in Dataframe (str)
   return df
 
 
+def bin_galaxies_5mbins(property1,df): # Input exact column name as in Dataframe (str)
+ 
+  '''Returns list of arrrays containing data-AGN-fraction as a function of required property, 
+  values of galaxy the property, model-AGN-fraction as a function of required property
+  and the errorbars on the model.
+
+  Inputs column name of property, manga dataframe, model dataframe,'''
+
+  if property1 == 'sSFR':
+    nbins = [-np.inf,-11.5,-8]
+
+  else:
+    nbins = [10,10.4,10.8,11.2,11.6,12]    
+
+  sorted_byprop1 = df.sort_values(by = [property1])
+  binned_byprop1 = pd.cut(sorted_byprop1[property1], bins= nbins)
+  df[property1 + "_bin"] = binned_byprop1
+
+  return df
+
+
 def get_epsilon_k(rho, fth = 0.005, epsilonk_max = 0.2):
 
   rho_sf_thresh =  get_rho_sf_thresh() # Msun/kpc^3
@@ -132,7 +153,7 @@ def get_Fagn_of_lcrit(df,lambda_crit):
   df['is_strong_agn'] = is_strong_ragn
 
 
-  df_mass_bins = bin_galaxies("log_mass", df)
+  df_mass_bins = bin_galaxies_5mbins("log_mass", df)
   grped_df_mass = df_mass_bins.groupby('log_mass_bin')
 
   size = []
@@ -467,5 +488,61 @@ def get_Fagn_of_chi(df,lambda_crit, chi_parms, log_lamc_offset):
   return [mass_center, frac, size]
 
 
+
+
+def plot_Fagn_mbins_constraint():
+  # Bin edges and midpoints
+  bin_edges = np.array([10.0, 10.4, 10.8, 11.2, 11.6, 12.0])
+  Ms = 0.5 * (bin_edges[:-1] + bin_edges[1:])
+
+  # Log F_AGN values (from board)
+  log_Fracs_q = np.array([-0.78, -1.88, -1.66, -1.17, -0.84])
+  log_Fracs_sf = np.array([-0.3, -1.62, -1.58, -1.10, -0.65])
+
+  # Errors only for last 3 Q bins and last 4 SF bins
+  log_ebars_q = np.array([[0.10, 0.05, 0.05],    # lower
+                          [0.09, 0.05, 0.05]])   # upper
+  log_ebars_sf = np.array([[0.4, 0.22, 0.13, 0.22],
+                            [0.37, 0.19, 0.12, 0.17]])
+
+  # Colors
+  red_hex = '#d62728'
+  blue_hex = '#1f77b4'
+
+  # Convert to linear
+  Fracs_q = 10**log_Fracs_q
+  Fracs_sf = 10**log_Fracs_sf
+
+  # Compute asymmetric errors in linear space
+  q_err_low = Fracs_q[2:] - 10**(log_Fracs_q[2:] - log_ebars_q[0])
+  q_err_high = 10**(log_Fracs_q[2:] + log_ebars_q[1]) - Fracs_q[2:]
+
+  sf_err_low = Fracs_sf[1:] - 10**(log_Fracs_sf[1:] - log_ebars_sf[0])
+  sf_err_high = 10**(log_Fracs_sf[1:] + log_ebars_sf[1]) - Fracs_sf[1:]
+
+  # === Plot Star-Forming error bands (bins 2–5) ===
+  sf_edges = bin_edges[1:]  # From 10.4 to 12
+  for i in range(4):  # 4 bins (i=0 to 3)
+      x = [sf_edges[i], sf_edges[i+1]]
+      y_low = Fracs_sf[i+1] - sf_err_low[i]
+      y_high = Fracs_sf[i+1] + sf_err_high[i]
+      plt.fill_between(x, [y_low]*2, [y_high]*2, color=blue_hex, alpha=0.5, label='Star-Forming' if i == 0 else "")
+
+  # === Plot Quiescent error bands (bins 3–5) ===
+  q_edges = bin_edges[2:]  # From 10.8 to 12
+  for i in range(3):  # 3 bins (i=0 to 2)
+      x = [q_edges[i], q_edges[i+1]]
+      y_low = Fracs_q[i+2] - q_err_low[i]
+      y_high = Fracs_q[i+2] + q_err_high[i]
+      plt.fill_between(x, [y_low]*2, [y_high]*2, color=red_hex, alpha=0.5, label='Quiescent' if i == 0 else "")
+
+  # === Upper limits for first 2 Q bins ===
+  for i in [0, 1]:
+      plt.fill_between([bin_edges[i], bin_edges[i+1]], [0, 0], [10**log_Fracs_q[i]]*2,
+                        color=red_hex, alpha=0.5)
+
+  # === Upper limit for first SF bin ===
+  plt.fill_between([bin_edges[0], bin_edges[1]], [0, 0], [10**log_Fracs_sf[0]]*2,
+                    color=blue_hex, alpha=0.5)
 
 

@@ -113,7 +113,7 @@ axs[1, 1].tick_params(axis='y', labelsize= 0.75*f, length=10, width=3)
 axs[1,1].annotate(r"$ \log_{10}\left(\lambda_c \right) = -4$", (10,3),fontsize = f)
 
 plt.sca(axs[1, 1])
-funcs.plot_manga_constraint()
+funcs.plot_
 
 # Adjust layout and add legend
 fig.subplots_adjust(wspace=0, hspace=0)
